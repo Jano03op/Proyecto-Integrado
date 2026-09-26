@@ -1,0 +1,39 @@
+# T1 — Design a reviewable MySQL MER for the first SGR backend delivery
+
+**Status:** Substantive MER drafted and read back; delivery commit/review still pending. **Route:** delegated direct; reading source material prepared the document write, and the task record and MER are separate review artifacts. **Delivery strategy:** ask-on-risk; 400 authored changed lines is a review advisory, not a hard cap. **Commit/review candidate:** pending; no staged diff or commit exists for this task.
+
+## Objective and reason
+
+Produce a source-traceable, MySQL-compatible entity-relationship model (MER) for the agreed first delivery: accounts (`cuentas`), organization (`organizacion`), agenda (`agenda`), and indicators (`indicadores`). The current JSON-backed prototype has nested and name-based relationships; reviewers need a small relational design with explicit keys and constraints before ORM implementation, rather than an unexamined copy of the larger SGR model. Keep activity, evidence, and independent review as a later increment, without severing the path to add them.
+
+## Scope and source boundaries
+
+- Stage 1 creates **only this task record**. After the parent mirrors its full text to Engram, author the substantive MER as a separate document in the same documentation work unit. Do not change source code, migrations, database state, remote services, or credentials in this task.
+- Describe a *proposed* relational schema, not existing Django models, migrations, tables, deployed MySQL, or tested authorization. Separate observed JSON shape, source requirement, and design choice. Use synthetic examples only; never inspect or reproduce `datosarray.json`, `credenciales_prueba.txt`, or personal records.
+- The deliverable must cover only the first four modules while identifying later activity/evidence/review links as deferred, not first-delivery tables.
+
+| Source | Portable reference | How to use it |
+| --- | --- | --- |
+| Local SGR specification | `docs/sgr-system-specification.md` §§ “Proposed conceptual data model” and “Current local baseline vs delivery stages” (lines 125–197, 216–255) | Distinguish conceptual future model from observed prototype and the smaller assessment slice. |
+| External logical model | `modelo-logico.md` (CU-01, CU-02 commitment links, CU-04, CU-05) | Use logical scoping, commitment history, metric configuration and computed-results semantics as precedent; do not copy its PostgreSQL physical types or whole schema into MySQL. |
+| Repository behavior already mapped read-only | `cuentas/services.py`, `organizacion/services.py`, `agenda/services.py`, `indicadores/services.py` | Trace JSON fields and nested items to proposed entities; label ambiguous or missing relationships as unresolved rather than inventing data. |
+
+## Acceptance criteria for the MER document
+
+- [x] Show a legible Mermaid `erDiagram` and a compact entity/relationship inventory for the first-delivery slice; every entity has a proposed PK, and every relation names an FK, its cardinality, and whether the child reference is required or nullable. Explain uniqueness, date/range and value constraints, including which require application validation rather than a portable MySQL `CHECK` alone. **Manual structural inspection only; no renderer was available.**
+- [x] Explain how JSON `personas` (name, job, role, delegation, username, email, hash, items), `delegaciones` (identifier, name, scope, status), `compromisos` (identifier, origin, requester, territory, owner, support area, description, status, observation, dates and history), and `periodo` (start/end plus per-person item goal, progress and weight) map or do **not** map to the new schema. Keep derived `Calculo` / indicator totals distinct from editable source facts. Record unknown identities, nullability, state values and migration reconciliation rules as decisions to verify, not facts.
+- [x] Specify the relationship between SGR staff/profile data and Django `auth.User` explicitly (including uniqueness/optionality and whether to reuse built-in auth instead of importing JSON hashes). Distinguish login identity from role/delegation authorization; do not claim existing Django auth is already connected to SGR records.
+- [x] Justify first-delivery scope and deferred additions (activity → evidence → review, and any later metrics derived from approved events) with insertion points, while avoiding speculative first-delivery FKs to absent tables.
+- [x] Provide a short decision log for ambiguous cardinalities/keys, MySQL versus PostgreSQL-only features, target scope (job versus person/item), history and immutable/derived values; identify who must confirm unresolved policy before implementation. Cite source headings/CU identifiers and repository file paths beside substantive claims, without machine-local absolute paths or private data.
+- [x] State clearly that the diagram is a proposal, not a claim of implemented ORM/Admin, applied migrations, populated tables, or delivered EC2 infrastructure.
+
+## Verification and delivery plan
+
+**TDD mode:** N/A, documentation-only. **TDD source/runner:** N/A. Focused automated tests and runtime harness: N/A because no executable behavior changes. Read back the complete task and later MER; inspect heading navigation, Mermaid ER syntax (render if a local tool is available), key/FK consistency, citations, scope boundaries and privacy. If no Mermaid renderer exists, record a manual syntax inspection rather than claim rendering. Before any eventual commit, inspect the exact staged diff, verify staged paths/whitespace and absence of sensitive data, and record actual checks and outcomes; do not infer validation of untracked files from `git diff --check`. Commit and review identity remain pending. Rollback boundary: remove only this task record and the subsequent MER document; no application behavior should change. If an honest work unit exceeds ~400 authored changed lines, ask before choosing review slices; never compress necessary documentation to meet a line target.
+
+## Progress and handoff
+
+- Stage 1: task record authored and read back; parent reports mirroring its full text to Engram before stage 2.
+- Stage 2: `docs/sgr-backend-mysql-mer.md` drafted (150 lines on readback); read back in full and manually checked diagram inventory (nine entities, ten FK edges), citations and absence of copied personal records/local absolute paths. `mmdc` unavailable (`Get-Command mmdc`), so **no Mermaid render was run**. Official MySQL 8.0 reference confirms enforced `CHECK` starts at 8.0.16. `git diff --check`: exit 0, no output; `git diff --stat`: exit 0, no output; `git status --short`: exit 0, reports `?? docs/sgr-backend-mysql-mer.md` and `?? odd/tasks/sgr-backend-mysql-mer.md` among unrelated pre-existing untracked paths. The diff checks **do not cover untracked files**. No runtime tests or runtime harness were run (N/A: documents only). No files were staged or committed in this stage.
+- Stage 2b: checked the official Mermaid ER notation: solid `--` means identifying, dashed `..` means non-identifying. Corrected all ten diagram FK edges to dashed because every child retains its own PK; endpoint cardinalities and proposed InnoDB FK enforcement are unchanged. Read back the corrected diagram (lines 13–26): ten dashed edges, zero solid edges. `git diff --check`: exit 0, no output; `git diff --stat`: exit 0, no output; `git status --short`: exit 0, both task and MER still untracked among unrelated paths. These diff checks cannot validate untracked file contents. No Mermaid render or runtime test was run; no staging or commit in this correction.
+- Next: parent synchronizes this updated task record, checks any future staged diff for exact paths/whitespace/privacy, and decides whether unresolved owner/policy questions require signoff before implementation. Commit and native review remain pending. No implementation or remote work is authorized by this record.
