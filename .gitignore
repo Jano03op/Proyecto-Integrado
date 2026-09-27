@@ -1,0 +1,17 @@
+venv/
+__pycache__/
+*.pyc
+db.sqlite3
+.env
+staticfiles/
+.vscode/
+datosarray.json
+credenciales_prueba.txt
+.env.*
+!.env.example
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.codegraph/
+.venv/
