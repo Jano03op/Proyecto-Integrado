@@ -382,3 +382,125 @@ class CommitmentAdminTests(TestCase):
         delete_url = reverse("admin:agenda_commitmentevent_delete", args=[event.pk])
         self.assertEqual(self.client.get(delete_url).status_code, 403)
         self.assertEqual(self.client.post(delete_url, {}).status_code, 403)
+
+
+class CommitmentViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_superuser(
+            username="admin_user",
+            email="admin@example.test",
+            password="test-password",
+        )
+        self.client.force_login(self.user)
+        session = self.client.session
+        session["persona_actual"] = "Admin Test"
+        session["rol"] = "administrador"
+        session.save()
+
+        self.delegation = Delegation.objects.create(name="La Antena")
+        self.position = Position.objects.create(name="Gestor")
+        self.owner = StaffProfile.objects.create(
+            display_name="Carlos Valenzuela",
+            delegation=self.delegation,
+            position=self.position,
+        )
+        self.commitment = Commitment.objects.create(
+            delegation=self.delegation,
+            owner=self.owner,
+            description="Luminarias calle principal",
+            requester="Junta Vecinal 4",
+            territory_label="La Antena",
+            due_on=date.today() + timedelta(days=10),
+            status=Commitment.Status.INGRESADO,
+        )
+
+    def test_tablero_agenda_view_renders_columns_and_filters(self):
+        url = reverse("tablero_agenda")
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "Luminarias calle principal")
+        self.assertContains(res, "Carlos Valenzuela")
+
+        # Territory filter
+        res_filter = self.client.get(url, {"territorio": "La Antena"})
+        self.assertEqual(res_filter.status_code, 200)
+        self.assertContains(res_filter, "Luminarias calle principal")
+
+        # Responsable filter
+        res_resp = self.client.get(url, {"responsable": "Carlos"})
+        self.assertEqual(res_resp.status_code, 200)
+        self.assertContains(res_resp, "Luminarias calle principal")
+
+        # Unmatched filter
+        res_nomatch = self.client.get(url, {"responsable": "Inexistente"})
+        self.assertEqual(res_nomatch.status_code, 200)
+        self.assertNotContains(res_nomatch, "Luminarias calle principal")
+
+    def test_crear_compromiso_view_get_and_post(self):
+        url = reverse("crear_compromiso")
+        res_get = self.client.get(url)
+        self.assertEqual(res_get.status_code, 200)
+
+        res_post = self.client.post(url, {
+            "origen": "Solicitud ciudadana",
+            "solicitante": "Vecinos Unidos",
+            "territorio": "La Antena",
+            "responsable": "Carlos Valenzuela",
+            "area_apoyo": "Operaciones",
+            "fecha_compromiso": str(date.today() + timedelta(days=20)),
+            "descripcion": "Reparación de veredas",
+        })
+        self.assertRedirects(res_post, reverse("tablero_agenda"))
+        new_c = Commitment.objects.get(description="Reparación de veredas")
+        self.assertEqual(new_c.status, Commitment.Status.INGRESADO)
+        self.assertEqual(new_c.events.count(), 1)
+
+    def test_crear_compromiso_missing_fields_validation(self):
+        url = reverse("crear_compromiso")
+        res = self.client.post(url, {
+            "origen": "Solicitud ciudadana",
+            "solicitante": "",
+            "territorio": "La Antena",
+            "responsable": "",
+            "fecha_compromiso": "",
+            "descripcion": "",
+        })
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "Debe completar solicitante")
+
+    def test_crear_compromiso_readonly_role_blocked(self):
+        regular = get_user_model().objects.create_user(username="viewer")
+        StaffProfile.objects.create(
+            user=regular, display_name="Viewer", legacy_role="consulta"
+        )
+        self.client.force_login(regular)
+        session = self.client.session
+        session["rol"] = "consulta"
+        session["persona_actual"] = "Viewer"
+        session.save()
+
+        url = reverse("crear_compromiso")
+        res = self.client.get(url)
+        self.assertRedirects(res, reverse("tablero_agenda"))
+
+    def test_detalle_compromiso_view_and_status_transition(self):
+        url = reverse("detalle_compromiso", args=[self.commitment.pk])
+        res_get = self.client.get(url)
+        self.assertEqual(res_get.status_code, 200)
+        self.assertContains(res_get, "Luminarias calle principal")
+
+        # Advance status
+        res_post = self.client.post(url, {
+            "estado": Commitment.Status.PENDIENTE,
+            "observacion": "Asignando cuadrilla",
+            "autor": "Admin Test",
+        })
+        self.assertRedirects(res_post, url)
+        self.commitment.refresh_from_db()
+        self.assertEqual(self.commitment.status, Commitment.Status.PENDIENTE)
+        self.assertEqual(self.commitment.events.count(), 2)
+
+    def test_detalle_compromiso_not_found(self):
+        url = reverse("detalle_compromiso", args=[99999])
+        res = self.client.get(url)
+        self.assertRedirects(res, reverse("tablero_agenda"))

@@ -57,10 +57,55 @@ class Commitment(models.Model):
         check_day = today if today is not None else date.today()
         return self.due_on < check_day
 
+    # Template compatibility properties
+    @property
+    def territorio(self):
+        return self.territory_label or (self.delegation.name if self.delegation else "")
+
+    @property
+    def responsable(self):
+        return self.owner.display_name if self.owner else ""
+
+    @property
+    def solicitante(self):
+        return self.requester
+
+    @property
+    def area_apoyo(self):
+        return self.support_area
+
+    @property
+    def fecha_registro(self):
+        return self.registered_on
+
+    @property
+    def fecha_compromiso(self):
+        return self.due_on
+
+    @property
+    def descripcion(self):
+        return self.description
+
+    @property
+    def observacion(self):
+        return self.note
+
+    @property
+    def estado(self):
+        return self.status
+
+    @property
+    def vencido(self):
+        return self.is_overdue
+
+    @property
+    def historial(self):
+        return self.events.all()
+
     def can_reopen_or_retrocede(self, user) -> bool:
         if not user or not user.is_authenticated:
             return False
-        if getattr(user, "is_superuser", False):
+        if getattr(user, "is_superuser", False) or getattr(user, "is_staff", False):
             return True
         profile = getattr(user, "staff_profile", None)
         if not profile:
@@ -216,6 +261,30 @@ class CommitmentEvent(models.Model):
                 name="unique_commitment_event_sequence",
             ),
         ]
+
+    # Template compatibility properties
+    @property
+    def estado_anterior(self):
+        return self.previous_status
+
+    @property
+    def estado_nuevo(self):
+        return self.next_status
+
+    @property
+    def fecha(self):
+        return self.occurred_on
+
+    @property
+    def observacion(self):
+        return self.note
+
+    @property
+    def autor(self):
+        if not self.actor:
+            return "Sistema"
+        profile = getattr(self.actor, "staff_profile", None)
+        return profile.display_name if profile else self.actor.username
 
     def clean(self):
         super().clean()
