@@ -103,6 +103,46 @@ class StaffTarget(models.Model):
         )
         return bool(weights) and sum(weights, Decimal("0")) == Decimal("100")
 
+    @property
+    def nombre(self):
+        return self.item.name
+
+    @property
+    def meta(self):
+        return self.goal
+
+    @property
+    def avance(self):
+        return self.legacy_progress or Decimal("0")
+
+    @property
+    def ponderador(self):
+        return self.weight_percent
+
+    @property
+    def porcentaje(self):
+        if self.goal and self.goal > 0:
+            return (self.avance / self.goal) * Decimal("100")
+        return Decimal("0")
+
+    @property
+    def semaforo(self):
+        return getattr(self, "_semaforo", "verde")
+
+    @semaforo.setter
+    def semaforo(self, value):
+        self._semaforo = value
+
+    @property
+    def ponderado_cumplimiento(self):
+        if hasattr(self, "_ponderado_cumplimiento"):
+            return self._ponderado_cumplimiento
+        return (self.weight_percent * self.porcentaje) / Decimal("100")
+
+    @ponderado_cumplimiento.setter
+    def ponderado_cumplimiento(self, value):
+        self._ponderado_cumplimiento = value
+
     def clean(self):
         super().clean()
         if self.pk and type(self).objects.filter(pk=self.pk, period__status=Period.Status.CLOSED).exists():

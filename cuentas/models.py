@@ -48,5 +48,29 @@ class StaffProfile(models.Model):
     def es_verificador(self):
         return "verificador" in (self.legacy_role or "").lower()
 
+    @property
+    def delegacion(self):
+        return self.delegation.name if self.delegation else ""
+
+    @property
+    def rol(self):
+        return self.legacy_role or "funcionario"
+
+    @property
+    def correo(self):
+        if self.user and self.user.email:
+            return self.user.email
+        return ""
+
+    @property
+    def items(self):
+        if hasattr(self, "_cached_items"):
+            return self._cached_items
+        return list(self.targets.select_related("item").all())
+
+    @items.setter
+    def items(self, value):
+        self._cached_items = value
+
     def __str__(self):
         return self.display_name

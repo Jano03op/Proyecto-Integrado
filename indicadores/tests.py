@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib import admin
@@ -10,6 +10,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from cuentas.models import StaffProfile
+from organizacion.models import Delegation, Position
 from .models import MetricItem, Period, StaffTarget
 
 
@@ -182,3 +183,190 @@ class IndicatorAdminTests(TestCase):
         self.assertEqual(self.client.get(reverse(
             "admin:indicadores_stafftarget_delete", args=[target.pk]
         )).status_code, 403)
+
+
+class IndicatorViewTests(TestCase):
+    def setUp(self):
+        self.delegation = Delegation.objects.create(name="Delegación Norte", scope="Provincial")
+        self.position = Position.objects.create(name="Técnico de Operaciones")
+        self.admin_user = get_user_model().objects.create_superuser(
+            username="admin-user", password="admin-password", email="admin@example.test"
+        )
+        self.admin_staff = StaffProfile.objects.create(
+            user=self.admin_user,
+            delegation=self.delegation,
+            position=self.position,
+            display_name="Admin Director",
+            legacy_role="administrador",
+        )
+        self.staff_user = get_user_model().objects.create_user(
+            username="funcionario-juan", password="user-password", email="juan@example.test"
+        )
+        self.staff = StaffProfile.objects.create(
+            user=self.staff_user,
+            delegation=self.delegation,
+            position=self.position,
+            display_name="Funcionario Juan",
+            legacy_role="funcionario",
+        )
+        today = date.today()
+        self.period = Period.objects.create(
+            starts_on=today - timedelta(days=50),
+            ends_on=today + timedelta(days=50),
+            status=Period.Status.ACTIVE,
+        )
+        self.item1 = MetricItem.objects.create(name="Atención de reclamos")
+        self.item2 = MetricItem.objects.create(name="Mantenimiento preventivo")
+        self.item3 = MetricItem.objects.create(name="Inspecciones de campo")
+
+        self.t1 = StaffTarget.objects.create(
+            staff=self.staff,
+            period=self.period,
+            item=self.item1,
+            goal=Decimal("100.00"),
+            weight_percent=Decimal("40.00"),
+            legacy_progress=Decimal("80.00"),
+        )
+        self.t2 = StaffTarget.objects.create(
+            staff=self.staff,
+            period=self.period,
+            item=self.item2,
+            goal=Decimal("100.00"),
+            weight_percent=Decimal("30.00"),
+            legacy_progress=Decimal("40.00"),
+        )
+        self.t3 = StaffTarget.objects.create(
+            staff=self.staff,
+            period=self.period,
+            item=self.item3,
+            goal=Decimal("100.00"),
+            weight_percent=Decimal("30.00"),
+            legacy_progress=Decimal("10.00"),
+        )
+
+    def set_session(self, user=None, persona_actual=None, rol=None):
+        from django.conf import settings
+
+        if user:
+            self.client.force_login(user)
+        session = self.client.session
+        if persona_actual:
+            session["persona_actual"] = persona_actual
+        if rol:
+            session["rol"] = rol
+        session.save()
+        self.client.cookies[settings.SESSION_COOKIE_NAME] = session.session_key
+
+    def test_landing_regular_staff_renders_landing_interno(self):
+        self.set_session(
+            user=self.staff_user,
+            persona_actual=self.staff.display_name,
+            rol="funcionario",
+        )
+        response = self.client.get(reverse("landing"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "indicadores/landinginterno.html")
+        self.assertContains(response, "Funcionario Juan")
+        self.assertContains(response, "Atención de reclamos")
+        self.assertContains(response, "Tus actividades")
+
+    def test_landing_admin_renders_landing_monitor(self):
+        self.set_session(
+            user=self.admin_user,
+            persona_actual=self.admin_staff.display_name,
+            rol="administrador",
+        )
+        response = self.client.get(reverse("landing"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "indicadores/landing_monitor.html")
+        self.assertContains(response, "Usuarios que requieren seguimiento")
+        self.assertContains(response, "Funcionario Juan")
+
+    def test_dashboard_renders_and_computes_semaphores(self):
+        self.set_session(
+            user=self.staff_user,
+            persona_actual=self.staff.display_name,
+            rol="funcionario",
+        )
+        response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "indicadores/dashboard.html")
+        self.assertContains(response, "Dashboard general")
+        self.assertContains(response, "Funcionario Juan")
+        self.assertContains(response, "Atención de reclamos")
+
+    def test_dashboard_redirects_when_not_logged_in(self):
+        response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("landing"))
+
+    def test_logueo_renders_indicators_with_weights_and_semaphores(self):
+        self.set_session(
+            user=self.staff_user,
+            persona_actual=self.staff.display_name,
+            rol="funcionario",
+        )
+        response = self.client.get(reverse("logueo"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "indicadores/indicador.html")
+        self.assertContains(response, "Funcionario Juan")
+        self.assertContains(response, "Atención de reclamos")
+        self.assertContains(response, "Actividades")
+
+    def test_configurar_metas_permission_and_post_update(self):
+        self.set_session(
+            user=self.staff_user,
+            persona_actual=self.staff.display_name,
+            rol="funcionario",
+        )
+        response = self.client.get(reverse("configurar_metas"))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("landing"))
+
+        self.set_session(
+            user=self.admin_user,
+            persona_actual=self.admin_staff.display_name,
+            rol="administrador",
+        )
+        response = self.client.get(reverse("configurar_metas"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "indicadores/configurar_metas.html")
+        self.assertContains(response, "Configurar metas")
+        self.assertContains(response, "Técnico de Operaciones")
+
+        post_data = {
+            "cargo": "Técnico de Operaciones",
+            f"meta_{self.item1.name}": "150",
+            f"ponderador_{self.item1.name}": "50",
+            f"meta_{self.item2.name}": "120",
+            f"ponderador_{self.item2.name}": "30",
+            f"meta_{self.item3.name}": "80",
+            f"ponderador_{self.item3.name}": "20",
+        }
+        post_response = self.client.post(reverse("configurar_metas"), post_data)
+        self.assertEqual(post_response.status_code, 200)
+
+        self.t1.refresh_from_db()
+        self.t2.refresh_from_db()
+        self.t3.refresh_from_db()
+        self.assertEqual(self.t1.goal, Decimal("150.00"))
+        self.assertEqual(self.t1.weight_percent, Decimal("50.00"))
+        self.assertEqual(self.t2.goal, Decimal("120.00"))
+        self.assertEqual(self.t3.weight_percent, Decimal("20.00"))
+
+    def test_mi_cuenta_and_resetear(self):
+        self.set_session(
+            user=self.staff_user,
+            persona_actual=self.staff.display_name,
+            rol="funcionario",
+        )
+        response = self.client.get(reverse("mi_cuenta"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "indicadores/mi_cuenta.html")
+        self.assertContains(response, "Funcionario Juan")
+        self.assertContains(response, "Delegación Norte")
+
+        reset_response = self.client.get(reverse("resetear"))
+        self.assertEqual(reset_response.status_code, 302)
+        self.assertEqual(reset_response.url, reverse("landing"))
+        self.assertNotIn("persona_actual", self.client.session)
