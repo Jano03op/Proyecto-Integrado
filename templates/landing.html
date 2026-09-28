@@ -1,0 +1,318 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es-cl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema MUN — Municipalidad de La Serena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        :root {
+            --granate: #7A1B1E;
+            --granate-oscuro: #591314;
+            --crema: #F6F2EA;
+            --tinta: #1F2A33;
+            --tinta-suave: #4A5560;
+            --azul-costero: #0E5C68;
+            --linea: #E2DACB;
+        }
+
+        * { box-sizing: border-box; }
+
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .flex-entre {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body {
+            margin: 0;
+            background: var(--crema);
+            color: var(--tinta);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .serif {
+            font-family: 'Fraunces', serif;
+        }
+
+        .franja-superior {
+            background: var(--granate);
+            color: #F6E9E7;
+            font-size: 13px;
+            padding: 8px 0;
+            letter-spacing: 0.2px;
+        }
+
+        nav.top {
+            padding: 22px 0;
+            border-bottom: 1px solid var(--linea);
+        }
+
+        nav.top .marca {
+            font-family: 'Fraunces', serif;
+            font-weight: 600;
+            font-size: 19px;
+            color: var(--tinta);
+        }
+
+        nav.top .marca span {
+            color: var(--granate);
+        }
+
+        .btn-ingresar {
+            background: var(--granate);
+            color: #fff;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 3px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.15s ease;
+        }
+
+        .btn-ingresar:hover {
+            background: var(--granate-oscuro);
+            color: #fff;
+        }
+
+        .hero {
+            padding: 88px 0 96px;
+        }
+
+        .hero h1 {
+            font-family: 'Fraunces', serif;
+            font-weight: 500;
+            font-size: 46px;
+            line-height: 1.18;
+            color: var(--tinta);
+            max-width: 620px;
+        }
+
+        .hero p.lead {
+            font-size: 17px;
+            color: var(--tinta-suave);
+            max-width: 480px;
+            line-height: 1.7;
+            margin-top: 20px;
+        }
+
+        .hero-acciones {
+            margin-top: 36px;
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .hero-acciones a.enlace-simple {
+            color: var(--tinta);
+            font-size: 15px;
+            text-decoration: none;
+            border-bottom: 1px solid var(--tinta);
+            padding-bottom: 2px;
+        }
+
+        .franja-objetivo {
+            background: #fff;
+            border-top: 1px solid var(--linea);
+            border-bottom: 1px solid var(--linea);
+            padding: 56px 0;
+        }
+
+        .franja-objetivo .etiqueta {
+            font-size: 13px;
+            color: var(--azul-costero);
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .franja-objetivo p {
+            font-family: 'Fraunces', serif;
+            font-size: 24px;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--tinta);
+            max-width: 780px;
+        }
+
+        .seccion-delegaciones {
+            padding: 76px 0;
+        }
+
+        .seccion-delegaciones h2 {
+            font-family: 'Fraunces', serif;
+            font-size: 26px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .seccion-delegaciones .sub {
+            color: var(--tinta-suave);
+            font-size: 15px;
+            margin-bottom: 40px;
+        }
+
+        .lista-delegaciones {
+            border-top: 1px solid var(--linea);
+        }
+
+        .fila-delegacion {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--linea);
+        }
+
+        .fila-delegacion .nombre {
+            font-family: 'Fraunces', serif;
+            font-size: 19px;
+            color: var(--tinta);
+        }
+
+        .fila-delegacion .enfasis {
+            color: var(--tinta-suave);
+            font-size: 14px;
+            text-align: right;
+            max-width: 420px;
+        }
+
+        footer.institucional {
+            background: var(--tinta);
+            color: #D8D3C8;
+            padding: 48px 0 32px;
+            margin-top: 40px;
+        }
+
+        footer.institucional .mision {
+            font-family: 'Fraunces', serif;
+            font-style: italic;
+            font-size: 17px;
+            line-height: 1.6;
+            color: #F0ECE2;
+            max-width: 640px;
+            margin-bottom: 28px;
+        }
+
+        footer.institucional .linea {
+            border-top: 1px solid #3A4249;
+            padding-top: 20px;
+            font-size: 13px;
+            color: #9CA3A8;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 32px; }
+            .franja-objetivo p { font-size: 20px; }
+            .fila-delegacion { flex-direction: column; gap: 6px; }
+            .fila-delegacion .enfasis { text-align: left; max-width: none; }
+            footer.institucional .linea { flex-direction: column; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="franja-superior">
+    <div class="container">
+        Ilustre Municipalidad de La Serena — Delegaciones Municipales
+    </div>
+</div>
+
+<nav class="top">
+    <div class="container flex-entre">
+        <div class="marca">Sistema<span>MUN</span></div>
+        <a href="{% url 'cuentas:login' %}" class="btn-ingresar">Ingresar</a>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="container">
+        <div style="display:flex; align-items:flex-start; gap:56px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:280px;">
+                <h1>La gestión municipal, con la cercanía de cada territorio.</h1>
+                <p class="lead">Registro, verificación y medición de la gestión de funcionarios y delegaciones, en un solo sistema.</p>
+                <div class="hero-acciones">
+                    <a href="{% url 'cuentas:login' %}" class="btn-ingresar">Ingresar al sistema</a>
+                    <a href="#delegaciones" class="enlace-simple">Ver delegaciones</a>
+                </div>
+            </div>
+            <div style="width:220px; flex-shrink:0;">
+                <svg viewBox="0 0 200 260" width="100%" role="img" aria-label="Ilustración del Faro Monumental de La Serena">
+                    <rect x="70" y="230" width="60" height="14" fill="var(--azul-costero)" opacity="0.15"/>
+                    <path d="M92 60 L108 60 L112 200 L88 200 Z" fill="var(--granate)"/>
+                    <rect x="86" y="196" width="28" height="10" fill="var(--tinta)"/>
+                    <rect x="82" y="40" width="36" height="22" rx="2" fill="var(--azul-costero)"/>
+                    <rect x="88" y="20" width="24" height="22" fill="var(--granate)"/>
+                    <circle cx="100" cy="31" r="6" fill="#F6E9E7"/>
+                    <path d="M100 8 L104 20 L96 20 Z" fill="var(--tinta)"/>
+                    <line x1="40" y1="230" x2="160" y2="230" stroke="var(--linea)" stroke-width="2"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="franja-objetivo">
+    <div class="container">
+        <p class="etiqueta">Objetivo del sistema</p>
+        <p>Centralizar el registro, seguimiento, verificación y medición de la gestión de funcionarios y delegaciones, generando indicadores que apoyen el control operativo y la toma de decisiones.</p>
+    </div>
+</section>
+
+<section class="seccion-delegaciones" id="delegaciones">
+    <div class="container">
+        <h2>Delegaciones territoriales</h2>
+        <p class="sub">Seis unidades de cercanía, cada una con su propio énfasis de gestión.</p>
+
+        <div class="lista-delegaciones">
+            <div class="fila-delegacion">
+                <span class="nombre">Avenida del Mar</span>
+                <span class="enfasis">Coordinación estacional, espacios públicos y turismo</span>
+            </div>
+            <div class="fila-delegacion">
+                <span class="nombre">Centro</span>
+                <span class="enfasis">Atención territorial y convivencia urbana</span>
+            </div>
+            <div class="fila-delegacion">
+                <span class="nombre">La Antena</span>
+                <span class="enfasis">Participación vecinal y apoyo comunitario</span>
+            </div>
+            <div class="fila-delegacion">
+                <span class="nombre">Las Compañías</span>
+                <span class="enfasis">Gestión comunitaria y articulación con organizaciones</span>
+            </div>
+            <div class="fila-delegacion">
+                <span class="nombre">La Pampa</span>
+                <span class="enfasis">Asistencia social y orientación de subsidios</span>
+            </div>
+            <div class="fila-delegacion">
+                <span class="nombre">Rural</span>
+                <span class="enfasis">Acercamiento de servicios y conectividad territorial</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="institucional">
+    <div class="container">
+        <p class="mision">"Entregar a la comunidad un servicio cercano, oportuno y de calidad, promoviendo la participación ciudadana y el desarrollo de la comuna."</p>
+        <div class="linea">
+            <span>&copy; 2026 Ilustre Municipalidad de La Serena</span>
+            <span>Sistema de Gestión de Resultados</span>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,162 @@
+{% extends 'organizacion/base_app.html' %}
+{% block content %}
+{% load static %}
+
+<style>
+    :root {
+        --granate: #7A1B1E;
+        --granate-oscuro: #591314;
+        --cafe: #4E3B31;
+        --crema: #F6F0E6;
+        --crema-oscura: #EFE6D6;
+        --tinta: #2B241F;
+        --tinta-suave: #6B5D52;
+    }
+
+    .indicador-header {
+        background: linear-gradient(135deg, var(--granate) 0%, var(--granate-oscuro) 100%);
+        border-radius: 16px;
+        padding: 32px 40px;
+        color: #F6E9E5;
+        margin-top: 24px;
+        margin-bottom: 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .indicador-header h2 {
+        font-weight: 600;
+        font-size: 26px;
+        margin-bottom: 4px;
+    }
+
+    .indicador-header p {
+        color: #E9CFC9;
+        font-size: 14px;
+        margin-bottom: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .indicador-header .resumen {
+        text-align: right;
+    }
+
+    .indicador-header .resumen .num {
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .indicador-header .resumen .label {
+        font-size: 12px;
+        color: #E9CFC9;
+        text-transform: uppercase;
+    }
+
+    .tabla-detalle {
+        background: #fff;
+        border: 1px solid var(--crema-oscura);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .fila-detalle {
+        display: grid;
+        grid-template-columns: 2.2fr 1fr 1fr 1.6fr 0.9fr;
+        align-items: center;
+        gap: 18px;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--crema-oscura);
+    }
+
+    .fila-detalle:last-child {
+        border-bottom: none;
+    }
+
+    .fila-detalle.encabezado {
+        background: var(--tinta) !important;
+        color: #F6F0E6;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        font-weight: 600;
+        padding: 12px 24px;
+    }
+
+    .col-nombre {
+        font-weight: 600;
+        color: var(--tinta);
+        font-size: 15px;
+    }
+
+    .col-dato {
+        color: var(--tinta-suave);
+        font-size: 14px;
+    }
+
+    .col-barra {
+        background: var(--crema-oscura);
+        border-radius: 20px;
+        height: 10px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .col-barra .relleno {
+        background: var(--granate);
+        height: 10px;
+        border-radius: 20px;
+    }
+
+    .col-porcentaje {
+        text-align: right;
+        font-weight: 700;
+        color: var(--tinta);
+        font-size: 15px;
+    }
+</style>
+
+<div class="container-fluid mt-2 px-4">
+
+    <div class="indicador-header">
+        <div>
+            <h2>{{ simulacion.nombre }}</h2>
+            <p>{{ simulacion.cargo }} · {{ simulacion.delegacion }}</p>
+        </div>
+        <div class="resumen">
+            <div class="num">{{ simulacion.items|length }}</div>
+            <div class="label">Actividades</div>
+        </div>
+    </div>
+
+    <div class="tabla-detalle">
+
+        <div class="fila-detalle encabezado">
+            <div>Actividad</div>
+            <div>Avance</div>
+            <div>Meta</div>
+            <div>Progreso</div>
+            <div style="text-align:right;">Pond.</div>
+        </div>
+
+        {% for tareas in simulacion.items %}
+        <div class="fila-detalle" style="background: {% if tareas.semaforo == 'verde' %}#E8F3E9{% elif tareas.semaforo == 'ambar' %}#FBF0DE{% else %}#FCEAEA{% endif %};">
+            <div class="col-nombre">{{ tareas.nombre }}</div>
+            <div class="col-dato">{{ tareas.avance }}</div>
+            <div class="col-dato">{{ tareas.meta }}</div>
+            <div class="col-barra">
+                <div class="relleno" style="width: {% widthratio tareas.avance tareas.meta 100 %}%;"></div>
+            </div>
+            <div class="col-porcentaje">{{ tareas.ponderador }}%</div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es-cl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Acceso · Sistema SGR{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        :root {
+            --granate: #7A1B1E;
+            --granate-oscuro: #591314;
+            --granate-claro: #F6E9E7;
+            --crema: #F6F2EA;
+            --tinta: #1F2A33;
+            --tinta-suave: #4A5560;
+            --azul-costero: #0E5C68;
+            --linea: #E2DACB;
+            --rojo: #991B1B;
+            --rojo-bg: #FEE2E2;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; min-height: 100vh; background: var(--crema); color: var(--tinta);
+            font-family: 'Inter', sans-serif;
+            display: flex; align-items: center; justify-content: center; padding: 24px;
+        }
+        .auth-shell { width: 100%; max-width: 420px; }
+        .auth-brand { text-align: center; margin-bottom: 24px; }
+        .auth-brand .marca { font-family: 'Fraunces', serif; font-weight: 700; font-size: 26px; color: var(--granate); text-decoration: none; }
+        .auth-brand .comuna { display: block; font-size: 12px; color: var(--tinta-suave); margin-top: 2px; letter-spacing: 0.03em; text-transform: uppercase; }
+        .auth-card { background: #fff; border: 1px solid var(--linea); border-radius: 10px; padding: 32px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        .auth-card h1 { font-family: 'Fraunces', serif; font-size: 21px; font-weight: 600; margin-bottom: 4px; }
+        .auth-card .subtitulo { font-size: 13px; color: var(--tinta-suave); margin-bottom: 22px; }
+        .form-label { font-size: 13px; font-weight: 600; color: var(--tinta); }
+        .form-control:focus { border-color: var(--granate); box-shadow: 0 0 0 0.2rem rgba(122,27,30,0.12); }
+        .btn-granate { background: var(--granate); color: #fff; border: none; border-radius: 6px; padding: 10px 18px; font-size: 14px; font-weight: 600; width: 100%; }
+        .btn-granate:hover { background: var(--granate-oscuro); color: #fff; }
+        .auth-links { text-align: center; margin-top: 18px; font-size: 13px; }
+        .auth-links a { color: var(--granate); text-decoration: none; font-weight: 500; }
+        .auth-links a:hover { text-decoration: underline; }
+        .auth-error { background: var(--rojo-bg); color: var(--rojo); border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+        .alert-success-sgr { background: #DCFCE7; color: #166534; border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+        .alert-info-sgr { background: var(--granate-claro); color: var(--granate); border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+<div class="auth-shell">
+    <div class="auth-brand">
+        <a href="{% url 'landing_page' %}" class="marca">SGR</a>
+        <span class="comuna">Municipalidad de La Serena</span>
+    </div>
+
+    <div class="auth-card">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="{% if message.tags == 'success' %}alert-success-sgr{% elif message.tags == 'error' %}auth-error{% else %}alert-info-sgr{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block auth_content %}{% endblock %}
+    </div>
+
+    {% block auth_links %}{% endblock %}
+</div>
+</body>
+</html>

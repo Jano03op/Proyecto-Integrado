@@ -1,0 +1,34 @@
+{% extends "cuentas/base_auth.html" %}
+{% block title %}Iniciar sesión · SGR{% endblock %}
+
+{% block auth_content %}
+<h1>Iniciar sesión</h1>
+<p class="subtitulo">Ingresa con tu cuenta del sistema SGR.</p>
+
+{% if form.non_field_errors %}
+    <div class="auth-error">{{ form.non_field_errors.0 }}</div>
+{% endif %}
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label" for="{{ form.username.id_for_label }}">Usuario</label>
+        {{ form.username }}
+        {% if form.username.errors %}<p class="text-danger small mt-1 mb-0">{{ form.username.errors.0 }}</p>{% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="{{ form.password.id_for_label }}">Contraseña</label>
+        {{ form.password }}
+        {% if form.password.errors %}<p class="text-danger small mt-1 mb-0">{{ form.password.errors.0 }}</p>{% endif %}
+    </div>
+    <button type="submit" class="btn btn-granate mt-2">Ingresar</button>
+</form>
+{% endblock %}
+
+{% block auth_links %}
+<div class="auth-links">
+    <a href="{% url 'cuentas:recuperar' %}">¿Olvidaste tu contraseña?</a>
+    <span class="text-muted">·</span>
+    <a href="{% url 'cuentas:registro' %}">Crear una cuenta</a>
+</div>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends 'organizacion/base_app.html' %}
+{% block content %}
+{% load static %}
+
+<style>
+    :root {
+        --granate: #7A1B1E;
+        --granate-oscuro: #591314;
+        --cafe: #4E3B31;
+        --crema: #F6F0E6;
+        --crema-oscura: #EFE6D6;
+        --tinta: #2B241F;
+        --tinta-suave: #6B5D52;
+    }
+
+    .cuenta-hero {
+        background: linear-gradient(135deg, var(--granate) 0%, var(--granate-oscuro) 100%);
+        border-radius: 16px;
+        padding: 40px;
+        color: #F6E9E5;
+        margin-top: 24px;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+    }
+
+    .avatar-circulo {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        background: rgba(246, 233, 229, 0.15);
+        border: 2px solid rgba(246, 233, 229, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .cuenta-hero h2 {
+        font-weight: 600;
+        font-size: 26px;
+        margin-bottom: 4px;
+    }
+
+    .delegacion-grande {
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #F6E9E5;
+        background: rgba(246, 233, 229, 0.15);
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        margin-top: 6px;
+    }
+
+    .cuenta-card {
+        background: #fff;
+        border: 1px solid var(--crema-oscura);
+        border-radius: 14px;
+        padding: 28px 32px;
+        margin-bottom: 20px;
+    }
+
+    .cuenta-card h6 {
+        color: var(--cafe);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        font-weight: 700;
+        margin-bottom: 18px;
+    }
+
+    .campo-cuenta {
+        margin-bottom: 16px;
+    }
+
+    .campo-cuenta label {
+        font-size: 12px;
+        color: var(--tinta-suave);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .campo-cuenta input {
+        width: 100%;
+        border: 1px solid var(--crema-oscura);
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 14px;
+        color: var(--tinta);
+        background: var(--crema);
+    }
+
+    .campo-cuenta input:focus {
+        outline: none;
+        border-color: var(--granate);
+        background: #fff;
+    }
+
+    .btn-guardar {
+        background: var(--granate);
+        color: #fff;
+        border: none;
+        padding: 10px 26px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .btn-guardar:hover {
+        background: var(--granate-oscuro);
+        color: #fff;
+    }
+
+    .enlace-olvide {
+        font-size: 13px;
+        color: var(--granate);
+        text-decoration: none;
+        border-bottom: 1px solid var(--granate);
+    }
+</style>
+
+<div class="container mt-2" style="max-width: 720px;">
+
+    <div class="cuenta-hero">
+        <div class="avatar-circulo">{{ inicial }}</div>
+        <div>
+            <h2>{{ simulacion.nombre }}</h2>
+            <p class="mb-0" style="color:#E9CFC9; font-size:14px;">{{ simulacion.cargo }}</p>
+            <span class="delegacion-grande">{{ simulacion.delegacion }}</span>
+        </div>
+    </div>
+
+    <div class="cuenta-card">
+        <h6>Datos de la cuenta</h6>
+
+        <div class="campo-cuenta">
+            <label>Nombre completo</label>
+            <input type="text" value="{{ simulacion.nombre }}">
+        </div>
+
+        <div class="campo-cuenta">
+            <label>Correo electrónico</label>
+            <input type="email" value="{{ simulacion.correo }}">
+        </div>
+
+        <div class="campo-cuenta">
+            <label>Contraseña</label>
+            <input type="password" value="••••••••">
+            <div class="mt-2">
+                <a href="#" class="enlace-olvide">¿Olvidé mi contraseña?</a>
+            </div>
+        </div>
+
+        <button class="btn-guardar mt-2">Guardar cambios</button>
+    </div>
+
+</div>
+
+{% endblock %}

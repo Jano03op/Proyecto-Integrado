@@ -1,0 +1,160 @@
+<!-- templates/indicadores/dashboard_general.html -->
+{% extends 'organizacion/base_app.html' %}
+{% block content %}
+{% load static %}
+
+<style>
+    :root {
+        --granate: #7A1B1E;
+        --granate-oscuro: #591314;
+        --cafe: #4E3B31;
+        --crema: #F6F0E6;
+        --crema-oscura: #EFE6D6;
+        --tinta: #2B241F;
+        --tinta-suave: #6B5D52;
+        --verde: #3D7A3F;
+        --ambar: #B07A1E;
+        --rojo: #A83232;
+    }
+
+    .dash-header {
+        background: linear-gradient(135deg, var(--granate) 0%, var(--granate-oscuro) 100%);
+        border-radius: 16px;
+        padding: 32px 36px;
+        color: #F6E9E5;
+        margin-top: 24px;
+        margin-bottom: 32px;
+    }
+
+    .dash-header h2 {
+        font-weight: 600;
+        font-size: 26px;
+        margin-bottom: 4px;
+    }
+
+    .dash-header p {
+        color: #E9CFC9;
+        font-size: 14px;
+        margin-bottom: 0;
+    }
+
+    .persona-card {
+        background: #fff;
+        border: 1px solid var(--crema-oscura);
+        border-radius: 14px;
+        padding: 22px;
+        margin-bottom: 22px;
+        transition: box-shadow 0.15s ease;
+    }
+
+    .persona-card:hover {
+        box-shadow: 0 4px 14px rgba(122, 27, 30, 0.08);
+    }
+
+    .persona-encabezado {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 4px;
+    }
+
+    .persona-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .persona-nombre {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--tinta);
+        margin-bottom: 2px;
+    }
+
+    .persona-cargo {
+        font-size: 13px;
+        color: var(--tinta-suave);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .persona-card hr {
+        border-color: var(--crema-oscura);
+        margin: 14px 0;
+    }
+
+    .fila-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        margin-bottom: 6px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .fila-item .nombre-item {
+        color: var(--tinta);
+        flex: 1;
+    }
+
+    .fila-item .valores {
+        color: var(--tinta-suave);
+        font-weight: 600;
+        min-width: 70px;
+        text-align: right;
+    }
+
+    .fila-item .badge-ponderador {
+        background: #fff;
+        color: var(--cafe);
+        font-size: 11px;
+        font-weight: 500;
+        padding: 3px 10px;
+        border-radius: 20px;
+        margin-left: 12px;
+        min-width: 90px;
+        text-align: center;
+    }
+</style>
+
+<div class="container mt-2">
+
+    <div class="dash-header">
+        <h2>Dashboard general</h2>
+        <p>Resumen de gestión por funcionario y delegación</p>
+    </div>
+
+    <div class="row">
+        {% for persona in personas %}
+        <div class="col-md-6">
+            <div class="persona-card">
+                <div class="persona-encabezado">
+                    <img src="{% static 'img/usuario.png' %}" alt="Avatar de {{ persona.nombre }}" class="persona-avatar">
+                    <div>
+                        <div class="persona-nombre">{{ persona.nombre }}</div>
+                        <div class="persona-cargo">{{ persona.cargo }} · {{ persona.delegacion }}</div>
+                    </div>
+                </div>
+
+                <hr>
+
+                {% for item in persona.items %}
+                <div class="fila-item" style="background: {% if item.semaforo == 'verde' %}#E8F3E9{% elif item.semaforo == 'ambar' %}#FBF0DE{% else %}#FCEAEA{% endif %};">
+                    <span class="nombre-item">{{ item.nombre }}</span>
+                    <span class="valores">{{ item.avance }} / {{ item.meta }}</span>
+                    <span class="badge-ponderador">Pond. {{ item.ponderador }}</span>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+
+{% endblock %}

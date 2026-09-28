@@ -1,0 +1,118 @@
+{% extends 'organizacion/base_app.html' %}
+{% load static %}
+
+{% block title %}Compromiso {{ compromiso.id }} — Agenda SGR{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+        <h2 class="h3 mb-1 fw-bold text-dark">Compromiso {{ compromiso.id }}</h2>
+        <p class="text-muted mb-0">{{ compromiso.origen }} — {{ compromiso.territorio }}</p>
+    </div>
+    <a href="{% url 'tablero_agenda' %}" class="btn btn-outline-sgr">Volver al tablero</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Datos del compromiso</h5>
+                {% if compromiso.estado == 'Realizado' %}
+                    <span class="badge bg-success">Realizado</span>
+                {% elif compromiso.vencido %}
+                    <span class="badge bg-danger">Vencido — {{ compromiso.estado }}</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">{{ compromiso.estado }}</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted small">Solicitante</dt>
+                    <dd class="col-sm-8">{{ compromiso.solicitante }}</dd>
+
+                    <dt class="col-sm-4 text-muted small">Responsable</dt>
+                    <dd class="col-sm-8">{{ compromiso.responsable }}</dd>
+
+                    <dt class="col-sm-4 text-muted small">Área de apoyo</dt>
+                    <dd class="col-sm-8">{{ compromiso.area_apoyo|default:"No especificada" }}</dd>
+
+                    <dt class="col-sm-4 text-muted small">Fecha de registro</dt>
+                    <dd class="col-sm-8">{{ compromiso.fecha_registro }}</dd>
+
+                    <dt class="col-sm-4 text-muted small">Fecha comprometida</dt>
+                    <dd class="col-sm-8">{{ compromiso.fecha_compromiso }}</dd>
+
+                    <dt class="col-sm-4 text-muted small">Descripción</dt>
+                    <dd class="col-sm-8">{{ compromiso.descripcion }}</dd>
+
+                    <dt class="col-sm-4 text-muted small">Última observación</dt>
+                    <dd class="col-sm-8">{{ compromiso.observacion|default:"Sin observaciones registradas." }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="mb-0 fw-bold">Actualizar estado</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'detalle_compromiso' compromiso.id %}">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="estado" class="form-label fw-semibold small text-secondary">Nuevo estado</label>
+                        <select name="estado" id="estado" class="form-select">
+                            {% for estado in estados %}
+                            <option value="{{ estado }}" {% if estado == compromiso.estado %}selected{% endif %}>{{ estado }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="autor" class="form-label fw-semibold small text-secondary">Quién actualiza</label>
+                        <input type="text" name="autor" id="autor" class="form-control" value="{{ compromiso.responsable }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observacion" class="form-label fw-semibold small text-secondary">Observación</label>
+                        <textarea name="observacion" id="observacion" class="form-control" rows="2"
+                                  placeholder="Explique el avance o el motivo del cambio"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-granate">Guardar cambio de estado</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="mb-0 fw-bold">Historial de cambios</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for evento in compromiso.historial reversed %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-semibold small">
+                            {% if evento.estado_anterior %}
+                                {{ evento.estado_anterior }} &rarr; {{ evento.estado_nuevo }}
+                            {% else %}
+                                Creado como "{{ evento.estado_nuevo }}"
+                            {% endif %}
+                        </span>
+                        <span class="text-muted small">{{ evento.fecha }}</span>
+                    </div>
+                    <p class="small text-muted mb-1">Por: {{ evento.autor }}</p>
+                    {% if evento.observacion %}
+                    <p class="small mb-0">{{ evento.observacion }}</p>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted small">Sin movimientos registrados todavía.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

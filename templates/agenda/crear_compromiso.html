@@ -1,0 +1,80 @@
+{% extends 'organizacion/base_app.html' %}
+{% load static %}
+
+{% block title %}Nuevo Compromiso — Agenda SGR{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="h3 mb-1 fw-bold text-dark">Registrar Nuevo Compromiso</h2>
+    <p class="text-muted mb-0">Solicitudes ciudadanas o internas que quedan agendadas con un responsable y una fecha comprometida.</p>
+</div>
+
+<div class="card shadow-sm border-0" style="max-width: 720px;">
+    <div class="card-body bg-white rounded p-4">
+        <form method="POST" action="{% url 'crear_compromiso' %}">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="origen" class="form-label fw-semibold small text-secondary">Origen del compromiso</label>
+                <select name="origen" id="origen" class="form-select">
+                    <option value="Solicitud ciudadana">Solicitud ciudadana</option>
+                    <option value="Actividad interna">Actividad interna</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="solicitante" class="form-label fw-semibold small text-secondary">Solicitante *</label>
+                <input type="text" name="solicitante" id="solicitante" class="form-control"
+                       placeholder="Nombre de la persona o unidad que solicita" value="{{ valores.solicitante }}" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="territorio" class="form-label fw-semibold small text-secondary">Territorio / Delegación *</label>
+                    <select name="territorio" id="territorio" class="form-select" required>
+                        <option value="" {% if not valores.territorio %}selected{% endif %}>-- Seleccione --</option>
+                        <option value="La Antena" {% if valores.territorio == 'La Antena' %}selected{% endif %}>La Antena</option>
+                        <option value="Las Compañías" {% if valores.territorio == 'Las Compañías' %}selected{% endif %}>Las Compañías</option>
+                        <option value="La Pampa" {% if valores.territorio == 'La Pampa' %}selected{% endif %}>La Pampa</option>
+                        <option value="Avenida del Mar" {% if valores.territorio == 'Avenida del Mar' %}selected{% endif %}>Avenida del Mar</option>
+                        <option value="Centro" {% if valores.territorio == 'Centro' %}selected{% endif %}>Centro</option>
+                        <option value="Rural" {% if valores.territorio == 'Rural' %}selected{% endif %}>Rural</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="responsable" class="form-label fw-semibold small text-secondary">Responsable *</label>
+                    <input type="text" name="responsable" id="responsable" class="form-control"
+                           placeholder="Funcionario a cargo" value="{{ valores.responsable }}" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="area_apoyo" class="form-label fw-semibold small text-secondary">Área de apoyo</label>
+                    <input type="text" name="area_apoyo" id="area_apoyo" class="form-control"
+                           placeholder="Ej: Vivienda, Aseo y Ornato" value="{{ valores.area_apoyo }}">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="fecha_compromiso" class="form-label fw-semibold small text-secondary">Fecha comprometida *</label>
+                    <input type="date" name="fecha_compromiso" id="fecha_compromiso" class="form-control"
+                           value="{{ valores.fecha_compromiso }}" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="descripcion" class="form-label fw-semibold small text-secondary">Descripción *</label>
+                <textarea name="descripcion" id="descripcion" class="form-control" rows="3"
+                          placeholder="Detalle de lo que se compromete a realizar" required>{{ valores.descripcion }}</textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-granate">Guardar Compromiso</button>
+                <a href="{% url 'tablero_agenda' %}" class="btn btn-outline-sgr">Cancelar</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}

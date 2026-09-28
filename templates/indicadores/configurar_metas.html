@@ -1,0 +1,151 @@
+{% extends 'organizacion/base_app.html' %}
+{% block content %}
+{% load static %}
+
+<style>
+    :root {
+        --granate: #7A1B1E;
+        --granate-oscuro: #591314;
+        --cafe: #4E3B31;
+        --crema: #F6F0E6;
+        --crema-oscura: #EFE6D6;
+        --tinta: #2B241F;
+        --tinta-suave: #6B5D52;
+    }
+
+    .metas-header {
+        background: linear-gradient(135deg, var(--granate) 0%, var(--granate-oscuro) 100%);
+        border-radius: 16px;
+        padding: 32px 40px;
+        color: #F6E9E5;
+        margin-top: 24px;
+        margin-bottom: 28px;
+    }
+
+    .metas-header h2 {
+        font-weight: 600;
+        font-size: 26px;
+        margin-bottom: 4px;
+    }
+
+    .metas-header p {
+        color: #E9CFC9;
+        font-size: 14px;
+        margin-bottom: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .cargo-card {
+        background: #fff;
+        border: 1px solid var(--crema-oscura);
+        border-radius: 14px;
+        padding: 24px 28px;
+        margin-bottom: 22px;
+    }
+
+    .cargo-nombre {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--tinta);
+        margin-bottom: 16px;
+    }
+
+    .fila-editable {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--crema-oscura);
+    }
+
+    .fila-editable:last-of-type {
+        border-bottom: none;
+    }
+
+    .fila-editable .nombre-item {
+        color: var(--tinta);
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .fila-editable label {
+        font-size: 11px;
+        color: var(--tinta-suave);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .fila-editable input {
+        width: 100%;
+        border: 1px solid var(--crema-oscura);
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 14px;
+        color: var(--tinta);
+        background: var(--crema);
+    }
+
+    .fila-editable input:focus {
+        outline: none;
+        border-color: var(--granate);
+        background: #fff;
+    }
+
+    .btn-guardar-cargo {
+        background: var(--granate);
+        color: #fff;
+        border: none;
+        padding: 9px 22px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        margin-top: 16px;
+    }
+
+    .btn-guardar-cargo:hover {
+        background: var(--granate-oscuro);
+        color: #fff;
+    }
+</style>
+
+<div class="container mt-2">
+
+    <div class="metas-header">
+        <h2>Configurar metas</h2>
+        <p>Metas y ponderadores por cargo</p>
+    </div>
+
+    {% for cargo, items in cargos_vistos.items %}
+    <div class="cargo-card">
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="cargo" value="{{ cargo }}">
+
+            <div class="cargo-nombre">{{ cargo }}</div>
+
+            {% for actividad in items %}
+            <div class="fila-editable">
+                <div class="nombre-item">{{ actividad.nombre }}</div>
+                <div>
+                    <label>Meta</label>
+                    <input type="number" name="meta_{{ actividad.nombre }}" value="{{ actividad.meta }}">
+                </div>
+                <div>
+                    <label>Ponderador (%)</label>
+                    <input type="number" name="ponderador_{{ actividad.nombre }}" value="{{ actividad.ponderador }}">
+                </div>
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="btn-guardar-cargo">Guardar {{ cargo }}</button>
+        </form>
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

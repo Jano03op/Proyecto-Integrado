@@ -1,0 +1,66 @@
+{% extends "organizacion/base_app.html" %}
+{% block title %}{% if editing %}Editar delegación{% else %}Nueva delegación{% endif %} · SGR{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb-sgr">
+    <span class="current">Organización</span>
+    <span class="sep">/</span>
+    <a href="{% url 'organizacion:delegaciones_list' %}">Delegaciones</a>
+    <span class="sep">/</span>
+    <span class="current">{% if editing %}Editar delegación{% else %}Nueva delegación{% endif %}</span>
+</nav>
+
+<div style="max-width: 620px;">
+    <div class="page-header">
+        <div>
+            <h1>{% if editing %}Editar: {{ delegacion.nombre }}{% else %}Nueva delegación{% endif %}</h1>
+            <p>{% if editing %}Modifica los datos de la delegación{% else %}Completa los campos para registrar una nueva delegación{% endif %}</p>
+        </div>
+    </div>
+
+    <div class="card-sgr p-4">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small" for="{{ form.nombre.id_for_label }}">
+                    Nombre de la delegación <span class="text-danger">*</span>
+                </label>
+                {{ form.nombre }}
+                {% if form.nombre.errors %}
+                    <p class="text-danger small mt-1 mb-0">{{ form.nombre.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small" for="{{ form.ambito.id_for_label }}">Ámbito territorial</label>
+                {{ form.ambito }}
+            </div>
+
+            {% if editing %}
+            <div class="mb-3">
+                <label class="form-label fw-semibold small d-block">Estado</label>
+                <div class="d-flex gap-3">
+                    {% for radio in form.estado %}
+                        <label class="d-flex align-items-center gap-2" style="font-size:14px;">
+                            {{ radio.tag }} {{ radio.choice_label }}
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <hr style="border-color: var(--linea);" class="my-4">
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{% url 'organizacion:delegaciones_list' %}" class="btn btn-outline-sgr">Cancelar</a>
+                <button type="submit" class="btn btn-granate">
+                    {% if editing %}Guardar cambios{% else %}Crear delegación{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+    {% if not editing %}
+    <p class="text-muted small mt-2">Los campos marcados con <span class="text-danger">*</span> son obligatorios.</p>
+    {% endif %}
+</div>
+{% endblock %}

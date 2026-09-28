@@ -1,0 +1,56 @@
+{% extends "cuentas/base_auth.html" %}
+{% block title %}Crear cuenta · SGR{% endblock %}
+
+{% block auth_content %}
+<h1>Crear cuenta</h1>
+<p class="subtitulo">Regístrate para acceder al sistema SGR.</p>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="row">
+        <div class="col-6 mb-3">
+            <label class="form-label" for="{{ form.first_name.id_for_label }}">Nombre</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}<p class="text-danger small mt-1 mb-0">{{ form.first_name.errors.0 }}</p>{% endif %}
+        </div>
+        <div class="col-6 mb-3">
+            <label class="form-label" for="{{ form.last_name.id_for_label }}">Apellido</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}<p class="text-danger small mt-1 mb-0">{{ form.last_name.errors.0 }}</p>{% endif %}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="{{ form.username.id_for_label }}">Nombre de usuario</label>
+        {{ form.username }}
+        {% if form.username.errors %}<p class="text-danger small mt-1 mb-0">{{ form.username.errors.0 }}</p>{% endif %}
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="{{ form.email.id_for_label }}">Correo electrónico</label>
+        {{ form.email }}
+        {% if form.email.errors %}<p class="text-danger small mt-1 mb-0">{{ form.email.errors.0 }}</p>{% endif %}
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="{{ form.password1.id_for_label }}">Contraseña</label>
+        {{ form.password1 }}
+        {% if form.password1.errors %}<p class="text-danger small mt-1 mb-0">{{ form.password1.errors.0 }}</p>{% endif %}
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="{{ form.password2.id_for_label }}">Repite la contraseña</label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}<p class="text-danger small mt-1 mb-0">{{ form.password2.errors.0 }}</p>{% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-granate mt-2">Crear cuenta</button>
+</form>
+{% endblock %}
+
+{% block auth_links %}
+<div class="auth-links">
+    ¿Ya tienes cuenta? <a href="{% url 'cuentas:login' %}">Inicia sesión</a>
+</div>
+{% endblock %}

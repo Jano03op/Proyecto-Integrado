@@ -1,0 +1,141 @@
+{% extends "organizacion/base_app.html" %}
+{% block title %}Delegaciones · SGR{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb-sgr">
+    <span class="current">Organización</span>
+    <span class="sep">/</span>
+    <span class="current">Delegaciones</span>
+</nav>
+
+<div class="page-header">
+    <div>
+        <h1>Delegaciones</h1>
+        <p>Unidades organizacionales base del sistema de gestión</p>
+    </div>
+    {% if request.session.rol == 'administrador' or request.session.rol == 'coordinador' or request.session.rol == 'delegado' %}
+    <a href="{% url 'organizacion:delegacion_create' %}" class="btn-granate">+ Nueva delegación</a>
+    {% endif %}
+</div>
+
+<div class="card-sgr">
+    <form method="get" class="d-flex flex-wrap align-items-center gap-3 p-3 border-bottom" style="border-color: var(--linea) !important;">
+        <div class="flex-grow-1" style="min-width:240px;">
+            <input type="text" name="q" value="{{ search }}" class="form-control form-control-sm"
+                   placeholder="Buscar por nombre o ámbito…">
+        </div>
+        <div class="btn-group btn-group-sm" role="group">
+            <button type="submit" name="estado" value="Todas"
+                    class="btn {% if estado == 'Todas' %}btn-granate{% else %}btn-outline-sgr{% endif %}">Todas</button>
+            <button type="submit" name="estado" value="Activa"
+                    class="btn {% if estado == 'Activa' %}btn-granate{% else %}btn-outline-sgr{% endif %}">Activa</button>
+            <button type="submit" name="estado" value="Inactiva"
+                    class="btn {% if estado == 'Inactiva' %}btn-granate{% else %}btn-outline-sgr{% endif %}">Inactiva</button>
+        </div>
+        {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+        <button type="submit" class="btn btn-sm btn-outline-sgr">Buscar</button>
+    </form>
+
+    {% if page_obj.object_list %}
+    <table class="table table-sgr mb-0">
+        <thead>
+            <tr>
+                <th class="ps-3">Nombre</th>
+                <th>Ámbito territorial</th>
+                <th class="text-center">Funcionarios</th>
+                <th class="text-center">Estado</th>
+                <th class="text-end pe-3">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in page_obj.object_list %}
+            <tr>
+                <td class="ps-3"><strong>{{ d.nombre }}</strong></td>
+                <td class="text-truncate" style="max-width:320px; color:var(--tinta-suave);">{{ d.ambito|default:"—" }}</td>
+                <td class="text-center"><span class="badge-count">{{ d.n_funcionarios }}</span></td>
+                <td class="text-center">
+                    {% if d.estado == 'Activa' %}
+                        <span class="badge-activa">● Activa</span>
+                    {% else %}
+                        <span class="badge-inactiva">● Inactiva</span>
+                    {% endif %}
+                </td>
+                <td class="text-end pe-3">
+                    <a class="link-sgr" href="{% url 'organizacion:delegacion_detail' d.id %}">Ver</a>
+                    <span class="text-muted">·</span>
+                    <a class="link-sgr" href="{% url 'organizacion:delegacion_edit' d.id %}">Editar</a>
+                    <span class="text-muted">·</span>
+                    <button class="link-sgr danger border-0 bg-transparent" type="button"
+                            data-bs-toggle="modal" data-bs-target="#modalDesactivar{{ d.id }}">
+                        {% if d.estado == 'Activa' %}Desactivar{% else %}Activar{% endif %}
+                    </button>
+                </td>
+            </tr>
+
+            <!-- Modal de confirmación de cambio de estado -->
+            <div class="modal fade" id="modalDesactivar{{ d.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-body p-4">
+                    <h5 class="mb-2">{% if d.estado == 'Activa' %}Desactivar{% else %}Activar{% endif %} delegación</h5>
+                    <p style="color:var(--tinta-suave); font-size:14px;">
+                        Está a punto de {% if d.estado == 'Activa' %}desactivar{% else %}activar{% endif %}
+                        <strong>{{ d.nombre }}</strong>{% if d.estado == 'Activa' %}, que tiene <strong>{{ d.n_funcionarios }} funcionarios asociados</strong>{% endif %}.
+                    </p>
+                    {% if d.estado == 'Activa' %}
+                    <div class="p-3 mb-3" style="background: var(--ambar-bg); border:1px solid #fcd34d; border-radius:6px;">
+                        <p class="mb-0" style="font-size:13px; color: var(--ambar);">
+                            <strong>Importante:</strong> esta acción no eliminará el historial de actividades ni los registros existentes. Los funcionarios asociados permanecerán en el sistema, pero la delegación quedará inactiva para nuevas asignaciones.
+                        </p>
+                    </div>
+                    {% endif %}
+                    <form method="post" action="{% url 'organizacion:delegacion_toggle_estado' d.id %}" class="d-flex justify-content-end gap-2 mt-3">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button type="button" class="btn-outline-sgr btn" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn-danger-sgr btn">
+                            Sí, {% if d.estado == 'Activa' %}desactivar{% else %}activar{% endif %} delegación
+                        </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-5">
+        <p class="fw-semibold mb-1">
+            {% if search or estado != 'Todas' %}Sin resultados para los filtros aplicados{% else %}Aún no hay delegaciones registradas{% endif %}
+        </p>
+        <p class="text-muted small mb-3">
+            {% if search or estado != 'Todas' %}Intenta con otros criterios de búsqueda.{% else %}Crea la primera delegación para comenzar a organizar al equipo municipal.{% endif %}
+        </p>
+        {% if not search and estado == 'Todas' %}
+        <a href="{% url 'organizacion:delegacion_create' %}" class="btn-granate btn">Crear primera delegación</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top" style="border-color: var(--linea) !important; background: var(--crema);">
+        <span class="small text-muted">
+            Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ total }} delegaciones
+        </span>
+        <div class="btn-group btn-group-sm">
+            {% if page_obj.has_previous %}
+            <a class="btn btn-outline-sgr" href="?page={{ page_obj.previous_page_number }}&q={{ search }}&estado={{ estado }}">← Anterior</a>
+            {% endif %}
+            {% for n in page_obj.paginator.page_range %}
+            <a class="btn {% if n == page_obj.number %}btn-granate{% else %}btn-outline-sgr{% endif %}"
+               href="?page={{ n }}&q={{ search }}&estado={{ estado }}">{{ n }}</a>
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <a class="btn btn-outline-sgr" href="?page={{ page_obj.next_page_number }}&q={{ search }}&estado={{ estado }}">Siguiente →</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
