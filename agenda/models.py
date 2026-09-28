@@ -177,7 +177,7 @@ class Commitment(models.Model):
         with transaction.atomic():
             super().save(*args, **kwargs)
             if is_new:
-                if not self.events.exists():
+                if not getattr(self, "_skip_auto_event", False) and not self.events.exists():
                     actor = getattr(self, "_current_actor", None)
                     occurred_at = getattr(self, "_current_occurred_at", None)
                     note = getattr(self, "_current_note", "") or self.note or "Compromiso registrado en la agenda colectiva."

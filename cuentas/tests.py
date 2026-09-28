@@ -5,6 +5,8 @@ from django.db.models.deletion import ProtectedError
 from django.test import TestCase
 from django.urls import reverse
 
+from agenda.models import Commitment, CommitmentEvent
+from indicadores.models import MetricItem, Period, StaffTarget
 from organizacion.models import Delegation, Position
 
 from .models import StaffProfile
@@ -233,4 +235,60 @@ class CuentasViewTests(TestCase):
         self.assertContains(res, "Reparar veredas")
         self.assertEqual(res.context["total_compromisos"], 1)
         self.assertEqual(res.context["pendientes"], 1)
+
+
+class ImportDataCommandTests(TestCase):
+    def test_import_data_command_dry_run(self):
+        import io
+        import json
+        from django.core.management import call_command
+
+        out = io.StringIO()
+        call_command("import_sgr_data", dry_run=True, json=True, stdout=out)
+        data = json.loads(out.getvalue())
+        self.assertTrue(data["dry_run"])
+        self.assertEqual(data["delegations"]["total"], 6)
+        self.assertEqual(data["commitments"]["imported"], 7)
+        self.assertEqual(data["commitments"]["held_exceptions"], 3)
+        self.assertEqual(data["staff_targets"]["created"], 33)
+        # Database remains empty because of dry-run rollback
+        self.assertEqual(Delegation.objects.count(), 0)
+        self.assertEqual(Commitment.objects.count(), 0)
+
+    def test_import_data_command_execution(self):
+        import io
+        import json
+        from django.core.management import call_command
+
+        out = io.StringIO()
+        call_command("import_sgr_data", json=True, stdout=out)
+        data = json.loads(out.getvalue())
+        self.assertFalse(data["dry_run"])
+        self.assertEqual(data["delegations"]["total"], 6)
+        self.assertEqual(data["commitments"]["imported"], 7)
+        self.assertEqual(data["commitments"]["held_exceptions"], 3)
+        self.assertEqual(data["staff_targets"]["created"], 33)
+        self.assertEqual(data["users"]["password_hashes_blocked"], 10)
+
+        # Verify records exist in database
+        self.assertEqual(Delegation.objects.count(), 6)
+        self.assertEqual(Position.objects.count(), 7)
+        self.assertEqual(StaffProfile.objects.count(), 10)
+        self.assertEqual(Period.objects.count(), 1)
+        self.assertEqual(MetricItem.objects.count(), 30)
+        self.assertEqual(StaffTarget.objects.count(), 33)
+        self.assertEqual(Commitment.objects.count(), 7)
+        self.assertGreater(CommitmentEvent.objects.count(), 15)
+
+        # Verify no passwords were imported
+        User = get_user_model()
+        for u in User.objects.all():
+            self.assertFalse(u.has_usable_password())
+
+        # Verify idempotency (re-running produces no duplicates)
+        out2 = io.StringIO()
+        call_command("import_sgr_data", json=True, stdout=out2)
+        self.assertEqual(Delegation.objects.count(), 6)
+        self.assertEqual(Commitment.objects.count(), 7)
+        self.assertEqual(StaffTarget.objects.count(), 33)
 
