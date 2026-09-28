@@ -105,6 +105,11 @@ class OrganizationViewTests(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertContains(res, "Delegación Norte")
         self.assertContains(res, "Delegación Sur")
+        delete_url = reverse('organizacion:delegacion_eliminar_pendiente', args=[self.delegation.pk])
+        self.assertContains(res, delete_url)
+        self.assertContains(self.client.get(delete_url), 'No se realizaron cambios')
+        self.assertEqual(self.client.post(delete_url).status_code, 405)
+        self.assertTrue(Delegation.objects.filter(pk=self.delegation.pk).exists())
 
         # Search filter
         res_search = self.client.get(url, {"q": "Norte"})

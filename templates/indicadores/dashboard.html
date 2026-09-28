@@ -127,6 +127,12 @@
         <p>Resumen de gestión por funcionario y delegación</p>
     </div>
 
+    <form method="get" action="{% url 'dashboard' %}" class="d-flex flex-wrap gap-2 mb-3">
+        <input class="form-control w-auto" name="q" value="{{ search }}" placeholder="Buscar funcionario" aria-label="Buscar funcionario">
+        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+        <a class="btn btn-primary" href="{% url 'accion_pendiente_indicador' 'agregar' 0 %}?recurso=funcionario">Agregar</a>
+    </form>
+
     <div class="row">
         {% for persona in personas %}
         <div class="col-md-6">
@@ -136,6 +142,10 @@
                     <div>
                         <div class="persona-nombre">{{ persona.nombre }}</div>
                         <div class="persona-cargo">{{ persona.cargo }} · {{ persona.delegacion }}</div>
+                    </div>
+                    <div class="ms-auto d-flex gap-1">
+                        <a class="btn btn-sm btn-outline-secondary" href="{% url 'accion_pendiente_indicador' 'editar' persona.pk %}?recurso=funcionario">Editar</a>
+                        <a class="btn btn-sm btn-outline-danger" href="{% url 'accion_pendiente_indicador' 'eliminar' persona.pk %}?recurso=funcionario">Eliminar</a>
                     </div>
                 </div>
 

@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal, DecimalException
 
 from django.shortcuts import redirect, render
+from django.http import Http404, HttpResponseNotAllowed
 
 from cuentas.models import StaffProfile
 from organizacion.models import Position
@@ -168,6 +169,9 @@ def dashboard(request):
         .prefetch_related("targets__item")
         .order_by("display_name")
     )
+    search = request.GET.get('q', '').strip()
+    if search:
+        personas = [persona for persona in personas if search.casefold() in persona.display_name.casefold()]
 
     for persona in personas:
         targets = list(persona.targets.all())
@@ -188,6 +192,7 @@ def dashboard(request):
             "periodo": periodo_dict,
             "personas": personas,
             "rol": rol_actual,
+            "search": search,
         },
     )
 
@@ -216,6 +221,9 @@ def logueo(request):
             actividad.semaforo = "rojo"
 
     targets.sort(key=lambda x: x.porcentaje)
+    search = request.GET.get('q', '').strip()
+    if search:
+        targets = [target for target in targets if search.casefold() in target.nombre.casefold()]
     hola.items = targets
 
     return render(
@@ -224,8 +232,25 @@ def logueo(request):
         {
             "simulacion": hola,
             "rol": rol_actual,
+            "search": search,
         },
     )
+
+
+def accion_pendiente(request, accion, pk):
+    if "persona_actual" not in request.session and not getattr(request.user, "is_authenticated", False):
+        return redirect("landing")
+    if request.method != "GET":
+        return HttpResponseNotAllowed(["GET"])
+    if accion not in ("agregar", "editar", "eliminar"):
+        raise Http404
+    recurso = request.GET.get("recurso", "indicador")
+    if recurso not in ("indicador", "funcionario"):
+        raise Http404
+    return render(request, "organizacion/accion_pendiente.html", {
+        "accion": accion, "recurso": recurso,
+        "volver": "dashboard" if recurso == "funcionario" else "logueo",
+    })
 
 
 def resetear(request):
@@ -308,11 +333,19 @@ def configurar_metas(request):
             if targets:
                 cargos_vistos[pos.name] = targets
 
+    search = request.GET.get("q", "").strip()
+    if search:
+        cargos_vistos = {
+            cargo: targets for cargo, targets in cargos_vistos.items()
+            if search.casefold() in cargo.casefold()
+        }
+
     return render(
         request,
         "indicadores/configurar_metas.html",
         {
             "rol": rol_actual,
             "cargos_vistos": cargos_vistos,
+            "search": search,
         },
     )

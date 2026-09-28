@@ -119,6 +119,12 @@
         <p>Metas y ponderadores por cargo</p>
     </div>
 
+    <form method="get" action="{% url 'configurar_metas' %}" class="d-flex flex-wrap gap-2 mb-3">
+        <input class="form-control w-auto" name="q" value="{{ search }}" placeholder="Buscar cargo" aria-label="Buscar cargo">
+        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+        <a class="btn btn-primary" href="{% url 'accion_pendiente_indicador' 'agregar' 0 %}">Agregar</a>
+    </form>
+
     {% for cargo, items in cargos_vistos.items %}
     <div class="cargo-card">
         <form method="POST">
@@ -129,7 +135,11 @@
 
             {% for actividad in items %}
             <div class="fila-editable">
-                <div class="nombre-item">{{ actividad.nombre }}</div>
+                <div class="nombre-item">
+                    {{ actividad.nombre }}
+                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'accion_pendiente_indicador' 'editar' actividad.pk %}">Editar</a>
+                    <a class="btn btn-sm btn-outline-danger" href="{% url 'accion_pendiente_indicador' 'eliminar' actividad.pk %}">Eliminar</a>
+                </div>
                 <div>
                     <label>Meta</label>
                     <input type="number" name="meta_{{ actividad.nombre }}" value="{{ actividad.meta }}">

@@ -35,7 +35,7 @@
             </div>
 
             <div class="col-md-4 d-flex gap-2">
-                <button type="submit" class="btn btn-granate w-100">Filtrar</button>
+                <button type="submit" class="btn btn-granate w-100">Buscar</button>
                 <a href="{% url 'tablero_agenda' %}" class="btn btn-outline-sgr" title="Limpiar filtros">Limpiar</a>
             </div>
         </form>
@@ -84,6 +84,10 @@
                     </div>
                 </div>
             </a>
+            <div class="d-flex gap-2 mt-1">
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'accion_pendiente_agenda' compromiso.id 'editar' %}">Editar</a>
+                <a class="btn btn-sm btn-outline-danger" href="{% url 'accion_pendiente_agenda' compromiso.id 'eliminar' %}">Eliminar</a>
+            </div>
             {% empty %}
             <p class="small text-muted fst-italic p-2">Sin compromisos en este estado.</p>
             {% endfor %}

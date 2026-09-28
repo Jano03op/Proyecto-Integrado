@@ -132,6 +132,12 @@
         </div>
     </div>
 
+    <form method="get" action="{% url 'logueo' %}" class="d-flex flex-wrap gap-2 mb-3">
+        <input class="form-control w-auto" name="q" value="{{ search }}" placeholder="Buscar actividad" aria-label="Buscar actividad">
+        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+        <a class="btn btn-primary" href="{% url 'accion_pendiente_indicador' 'agregar' 0 %}">Agregar</a>
+    </form>
+
     <div class="tabla-detalle">
 
         <div class="fila-detalle encabezado">
@@ -139,7 +145,7 @@
             <div>Avance</div>
             <div>Meta</div>
             <div>Progreso</div>
-            <div style="text-align:right;">Pond.</div>
+            <div style="text-align:right;">Pond. / Acciones</div>
         </div>
 
         {% for tareas in simulacion.items %}
@@ -150,7 +156,11 @@
             <div class="col-barra">
                 <div class="relleno" style="width: {% widthratio tareas.avance tareas.meta 100 %}%;"></div>
             </div>
-            <div class="col-porcentaje">{{ tareas.ponderador }}%</div>
+            <div class="col-porcentaje">
+                {{ tareas.ponderador }}%
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'accion_pendiente_indicador' 'editar' tareas.pk %}">Editar</a>
+                <a class="btn btn-sm btn-outline-danger" href="{% url 'accion_pendiente_indicador' 'eliminar' tareas.pk %}">Eliminar</a>
+            </div>
         </div>
         {% endfor %}
 

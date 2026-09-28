@@ -2,6 +2,7 @@ from datetime import date, datetime
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.http import Http404, HttpResponseNotAllowed
 from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -59,6 +60,17 @@ def tablero_agenda(request):
         'territorios_disponibles': territorios_disponibles,
     }
     return render(request, 'agenda/tablero.html', contexto)
+
+
+@requiere_login
+def accion_pendiente(request, accion, id):
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+    if accion not in ('editar', 'eliminar'):
+        raise Http404
+    return render(request, 'organizacion/accion_pendiente.html', {
+        'accion': accion, 'recurso': 'compromiso', 'volver': 'tablero_agenda',
+    })
 
 
 @requiere_login

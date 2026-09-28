@@ -24,4 +24,5 @@ urlpatterns = [
     path('resetear/', views.resetear, name='resetear'),
     path('mi-cuenta/', views.mi_cuenta, name='mi_cuenta'),
     path('configuracion/', views.configurar_metas, name='configurar_metas'),
+    path('indicador/<str:accion>/<int:pk>/', views.accion_pendiente, name='accion_pendiente_indicador'),
 ]

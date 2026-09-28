@@ -5,4 +5,5 @@ urlpatterns = [
     path('tablero/', views.tablero_agenda, name='tablero_agenda'),
     path('nuevo/', views.crear_compromiso, name='crear_compromiso'),
     path('compromiso/<int:id>/', views.detalle_compromiso, name='detalle_compromiso'),
+    path('compromiso/<int:id>/<str:accion>/', views.accion_pendiente, name='accion_pendiente_agenda'),
 ]
