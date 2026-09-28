@@ -105,3 +105,132 @@ class ReconciliationCommandTests(TestCase):
         self.assertEqual(summary["commitment_events"]["actor_candidates"], 21)
         self.assertEqual(summary["commitment_events"]["unresolved_historical_actors"], 4)
 
+
+class CuentasViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="carlos.valenzuela",
+            email="carlos@laserena.cl",
+            password="secure-password-123",
+            first_name="Carlos",
+            last_name="Valenzuela",
+        )
+        self.delegation = Delegation.objects.create(name="La Antena", scope="Territorial")
+        self.profile = StaffProfile.objects.create(
+            user=self.user,
+            delegation=self.delegation,
+            display_name="Carlos Valenzuela",
+            legacy_role="funcionario",
+        )
+
+    def set_session(self, user=None, persona_actual=None, rol=None):
+        from django.conf import settings
+
+        if user:
+            self.client.force_login(user)
+        session = self.client.session
+        if persona_actual:
+            session["persona_actual"] = persona_actual
+        if rol:
+            session["rol"] = rol
+        session.save()
+        self.client.cookies[settings.SESSION_COOKIE_NAME] = session.session_key
+
+    def test_login_view_get_and_post_valid(self):
+        url = reverse("cuentas:login")
+        res_get = self.client.get(url)
+        self.assertEqual(res_get.status_code, 200)
+        self.assertTemplateUsed(res_get, "cuentas/login.html")
+
+        res_fail = self.client.post(url, {"username": "carlos.valenzuela", "password": "wrong"})
+        self.assertEqual(res_fail.status_code, 200)
+        self.assertContains(res_fail, "Usuario o contraseña incorrectos")
+
+        res_success = self.client.post(url, {"username": "carlos.valenzuela", "password": "secure-password-123"})
+        self.assertEqual(res_success.status_code, 302)
+        self.assertEqual(res_success.url, reverse("cuentas:home"))
+        self.assertEqual(self.client.session.get("persona_actual"), "Carlos Valenzuela")
+
+    def test_logout_view(self):
+        self.set_session(user=self.user, persona_actual="Carlos Valenzuela", rol="funcionario")
+        res = self.client.get(reverse("cuentas:logout"))
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, reverse("landing_page"))
+        self.assertNotIn("persona_actual", self.client.session)
+
+    def test_registro_view_creates_user_and_profile(self):
+        url = reverse("cuentas:registro")
+        res_get = self.client.get(url)
+        self.assertEqual(res_get.status_code, 200)
+        self.assertTemplateUsed(res_get, "cuentas/registro.html")
+
+        payload = {
+            "first_name": "Ana",
+            "last_name": "Gómez",
+            "username": "ana.gomez",
+            "email": "ana@laserena.cl",
+            "password1": "password1234",
+            "password2": "password1234",
+        }
+        res_post = self.client.post(url, payload)
+        self.assertEqual(res_post.status_code, 302)
+        self.assertEqual(res_post.url, reverse("cuentas:home"))
+
+        new_user = get_user_model().objects.get(username="ana.gomez")
+        self.assertEqual(new_user.email, "ana@laserena.cl")
+        self.assertTrue(new_user.check_password("password1234"))
+        profile = StaffProfile.objects.get(user=new_user)
+        self.assertEqual(profile.display_name, "Ana Gómez")
+        self.assertEqual(profile.legacy_role, "funcionario")
+
+    def test_recuperar_view_two_steps(self):
+        from django.conf import settings
+
+        url = reverse("cuentas:recuperar")
+        res_step1 = self.client.post(url, {"identificador": "carlos.valenzuela"})
+        self.assertEqual(res_step1.status_code, 302)
+        self.assertEqual(res_step1.url, url)
+
+        session = self.client.session
+        session["recuperar_usuario"] = "carlos.valenzuela"
+        session.save()
+        self.client.cookies[settings.SESSION_COOKIE_NAME] = session.session_key
+
+        res_step2_get = self.client.get(url)
+        self.assertEqual(res_step2_get.status_code, 200)
+        self.assertContains(res_step2_get, "Define tu nueva contraseña")
+
+        res_step2_post = self.client.post(url, {
+            "password1": "new-password-5678",
+            "password2": "new-password-5678",
+        })
+        self.assertEqual(res_step2_post.status_code, 302)
+        self.assertEqual(res_step2_post.url, reverse("cuentas:login"))
+
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("new-password-5678"))
+
+    def test_home_view_renders_commitment_counters(self):
+        from agenda.models import Commitment
+        from datetime import date, timedelta
+
+        Commitment.objects.create(
+            delegation=self.delegation,
+            owner=self.profile,
+            description="Reparar veredas",
+            origin="Solicitud ciudadana",
+            requester="Vecinos",
+            territory_label="La Antena",
+            due_on=date.today() + timedelta(days=10),
+            status=Commitment.Status.INGRESADO,
+        )
+
+        self.set_session(user=self.user, persona_actual="Carlos Valenzuela", rol="funcionario")
+        res = self.client.get(reverse("cuentas:home"))
+        self.assertEqual(res.status_code, 200)
+        self.assertTemplateUsed(res, "cuentas/home.html")
+        self.assertContains(res, "Carlos Valenzuela")
+        self.assertContains(res, "Reparar veredas")
+        self.assertEqual(res.context["total_compromisos"], 1)
+        self.assertEqual(res.context["pendientes"], 1)
+
