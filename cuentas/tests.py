@@ -75,3 +75,33 @@ class StaffProfileAdminTests(TestCase):
         ).status_code, 302)
         self.assertFalse(StaffProfile.objects.filter(pk=profile.pk).exists())
         self.assertTrue(get_user_model().objects.filter(pk=user.pk).exists())
+
+
+class ReconciliationCommandTests(TestCase):
+    def test_reconcile_command_dry_run_json_output(self):
+        import io
+        import json
+        from django.core.management import call_command
+
+        out = io.StringIO()
+        call_command("reconcile_sgr_data", json=True, stdout=out)
+        data = json.loads(out.getvalue())
+
+        summary = data["summary"]
+        self.assertEqual(summary["delegations"]["raw_count"], 6)
+        self.assertEqual(summary["delegations"]["canonical_candidates"], 6)
+        self.assertEqual(summary["persons"]["raw_count"], 10)
+        self.assertEqual(summary["persons"]["accepted_with_delegation"], 8)
+        self.assertEqual(summary["persons"]["held_delegation_exceptions"], 2)
+        self.assertEqual(summary["persons"]["credential_hashes_detected"], 10)
+        self.assertTrue(summary["period"]["valid"])
+        self.assertEqual(summary["period"]["total_calendar_days"], 92)
+        self.assertEqual(summary["staff_targets"]["persons_with_items"], 7)
+        self.assertEqual(summary["staff_targets"]["weight_sets_100_percent"], 6)
+        self.assertEqual(summary["commitments"]["raw_count"], 10)
+        self.assertEqual(summary["commitments"]["with_owner_candidate"], 7)
+        self.assertEqual(summary["commitments"]["held_owner_exceptions"], 3)
+        self.assertEqual(summary["commitment_events"]["raw_count"], 25)
+        self.assertEqual(summary["commitment_events"]["actor_candidates"], 21)
+        self.assertEqual(summary["commitment_events"]["unresolved_historical_actors"], 4)
+
