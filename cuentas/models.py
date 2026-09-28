@@ -21,5 +21,32 @@ class StaffProfile(models.Model):
     display_name = models.CharField(max_length=150)
     legacy_role = models.CharField(max_length=150, blank=True)
 
+    @property
+    def nombre(self):
+        return self.display_name
+
+    @property
+    def cargo(self):
+        return self.position.name if self.position else "Sin cargo asignado"
+
+    @property
+    def estado(self):
+        if self.user:
+            return "Activo" if self.user.is_active else "Inactivo"
+        return "Activo"
+
+    @property
+    def iniciales(self):
+        parts = self.display_name.strip().split()
+        if not parts:
+            return "--"
+        if len(parts) == 1:
+            return parts[0][:2].upper()
+        return (parts[0][0] + parts[1][0]).upper()
+
+    @property
+    def es_verificador(self):
+        return "verificador" in (self.legacy_role or "").lower()
+
     def __str__(self):
         return self.display_name
