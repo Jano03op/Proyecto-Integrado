@@ -99,7 +99,7 @@ if _backend == "mysql":
             "ENGINE": "django.db.backends.mysql",
             "NAME": _required_env("DB_NAME"),
             "USER": _required_env("DB_USER"),
-            "PASSWORD": _required_env("DB_PASSWORD"),
+            "PASSWORD": os.environ.get("DB_PASSWORD", ""),
             "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
             "PORT": os.environ.get("DB_PORT", "3306"),
         }
