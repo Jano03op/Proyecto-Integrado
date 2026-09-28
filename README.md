@@ -1,63 +1,65 @@
-# SGR (Sistema de Gestión y Rendición)
+# SGR - Sistema de Gestión y Rendición
 
-SGR is a Django-based municipal management system for municipal delegations, collective agenda commitments, operational metrics, and staff accountability.
-
----
-
-## Architecture Overview
-
-The system is organized into four core domain modules backed by a 9-entity relational MySQL/SQLite schema:
-
-- **`cuentas`**: Authentication, role-based session handling, user profiles (`StaffProfile`), and dashboard.
-- **`organizacion`**: Territorial delegations (`Delegation`), global catalog positions (`Position`), and delegation lifecycle management.
-- **`agenda`**: Collective agenda commitments (`Commitment`) and chronological append-only audit trail (`CommitmentEvent`).
-- **`indicadores`**: Periodic reporting intervals (`Period`), catalog metrics (`MetricItem`), and individual staff targets (`StaffTarget`).
+SGR es un sistema de gestión municipal desarrollado sobre Django para la administración de delegaciones territoriales, compromisos de la agenda colectiva, métricas operativas y rendición de cuentas de funcionarios.
 
 ---
 
-## Requirements
+## Arquitectura del Sistema
+
+El sistema se compone de cuatro módulos principales respaldados por un modelo relacional de 9 entidades (compatible con MySQL y SQLite):
+
+- **`cuentas`**: Autenticación, gestión de sesiones basada en roles, perfiles de funcionarios (`StaffProfile`) y escritorio principal.
+- **`organizacion`**: Delegaciones territoriales (`Delegation`), catálogo global de cargos (`Position`) y administración del ciclo de vida de delegaciones.
+- **`agenda`**: Compromisos de la agenda colectiva (`Commitment`) y registro cronológico inmutable de eventos (`CommitmentEvent`).
+- **`indicadores`**: Periodos de evaluación (`Period`), catálogo de métricas (`MetricItem`) y metas individuales por funcionario (`StaffTarget`).
+
+---
+
+## Requisitos
 
 - Python 3.12+
-- MySQL 8.x / MariaDB (or SQLite for local lightweight testing)
-- C/C++ compiler or prebuilt binary wheels for `mysqlclient`
+- MySQL 8.x / MariaDB (o SQLite para pruebas locales livianas)
+- Compilador C/C++ o paquetes binarios (wheels) para `mysqlclient`
 
 ---
 
-## Getting Started
+## Guía de Instalación y Puesta en Marcha
 
-### 1. Clone the repository
+### 1. Clonar el repositorio
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Jano03op/Proyecto-Integrado.git
 cd Proyecto-Integrado
 ```
 
-### 2. Create and activate a virtual environment
+### 2. Crear y activar el entorno virtual
 
 ```bash
 python -m venv venv
 
-# On Windows (PowerShell):
+# En Windows (PowerShell):
 .\venv\Scripts\Activate.ps1
 
-# On Linux / macOS:
+# En Linux / macOS:
 source venv/bin/activate
 ```
 
-### 3. Install dependencies
+### 3. Instalar dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure environment variables
+### 4. Configurar variables de entorno
 
-The project uses environment variables for security and deployment isolation. See `.env.example` for reference.
+El sistema utiliza variables de entorno para mantener la seguridad y el aislamiento entre entornos. Puedes guiarte con el archivo `.env.example`.
 
-For local development with MySQL (e.g., WampServer on port 3306):
+#### Opción A: Desarrollo local con MySQL (ej. WampServer en puerto 3306)
+
+En PowerShell:
 
 ```powershell
-$env:SECRET_KEY="your-secret-key-here"
+$env:SECRET_KEY="tu-clave-secreta-local"
 $env:DEBUG="True"
 $env:ALLOWED_HOSTS="localhost,127.0.0.1"
 $env:DB_BACKEND="mysql"
@@ -68,55 +70,57 @@ $env:DB_HOST="127.0.0.1"
 $env:DB_PORT="3306"
 ```
 
-For lightweight local development with SQLite:
+#### Opción B: Desarrollo local con SQLite
+
+En PowerShell:
 
 ```powershell
-$env:SECRET_KEY="your-secret-key-here"
+$env:SECRET_KEY="tu-clave-secreta-local"
 $env:DEBUG="True"
 $env:ALLOWED_HOSTS="localhost,127.0.0.1"
 $env:DB_BACKEND="sqlite"
 ```
 
-### 5. Apply database migrations
+### 5. Aplicar migraciones a la base de datos
 
 ```bash
 python manage.py migrate
 ```
 
-### 6. Import initial data (Optional)
+### 6. Cargar datos iniciales (Opcional)
 
-If a legacy `datosarray.json` is available, run the data reconciliation and import command:
+Si dispones del archivo fuente `datosarray.json`, puedes utilizar el comando de importación y conciliación:
 
 ```bash
-# Dry run verification:
+# Simulación sin escritura (dry-run):
 python manage.py import_sgr_data --dry-run
 
-# Commit import:
+# Importación definitiva:
 python manage.py import_sgr_data
 ```
 
-To create an administrator manually:
+Para crear un usuario administrador manualmente:
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### 7. Run the development server
+### 7. Iniciar el servidor de desarrollo
 
 ```bash
 python manage.py runserver 127.0.0.1:8000
 ```
 
-Navigate to:
-- Portal: `http://127.0.0.1:8000/`
-- Login: `http://127.0.0.1:8000/cuentas/login/`
-- Admin panel: `http://127.0.0.1:8000/admin/`
+Acceso en el navegador:
+- **Portal de inicio**: `http://127.0.0.1:8000/`
+- **Inicio de sesión**: `http://127.0.0.1:8000/cuentas/login/`
+- **Panel de administración Django**: `http://127.0.0.1:8000/admin/`
 
 ---
 
-## Running Automated Tests
+## Ejecución de Pruebas Automatizadas
 
-Run the full automated test suite across all four applications:
+Para validar la integridad de todos los módulos y reglas de negocio:
 
 ```bash
 python manage.py test organizacion cuentas indicadores agenda
