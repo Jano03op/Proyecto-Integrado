@@ -420,6 +420,9 @@ class CommitmentViewTests(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertContains(res, "Luminarias calle principal")
         self.assertContains(res, "Carlos Valenzuela")
+        self.assertContains(res, reverse('accion_pendiente_agenda', args=[self.commitment.pk, 'editar']))
+        self.assertContains(res, reverse('accion_pendiente_agenda', args=[self.commitment.pk, 'eliminar']))
+        self.assertContains(res, '>Buscar</button>')
 
         # Territory filter
         res_filter = self.client.get(url, {"territorio": "La Antena"})
@@ -435,6 +438,13 @@ class CommitmentViewTests(TestCase):
         res_nomatch = self.client.get(url, {"responsable": "Inexistente"})
         self.assertEqual(res_nomatch.status_code, 200)
         self.assertNotContains(res_nomatch, "Luminarias calle principal")
+
+    def test_list_actions_are_read_only_placeholders(self):
+        url = reverse('accion_pendiente_agenda', args=[self.commitment.pk, 'eliminar'])
+        self.assertContains(self.client.get(url), 'No se realizaron cambios')
+        self.assertEqual(self.client.post(url).status_code, 405)
+        self.assertEqual(Commitment.objects.count(), 1)
+        self.assertEqual(self.commitment.events.count(), 1)
 
     def test_crear_compromiso_view_get_and_post(self):
         url = reverse("crear_compromiso")

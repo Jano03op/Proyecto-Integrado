@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
+from django.http import HttpResponseNotAllowed
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
@@ -30,6 +31,16 @@ def _get_user_role(request):
 def _sin_permiso(request):
     messages.error(request, 'Tu rol no tiene permiso para modificar delegaciones.')
     return redirect('organizacion:delegaciones_list')
+
+
+@requiere_login
+def delegacion_eliminar_pendiente(request, pk):
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+    return render(request, 'organizacion/accion_pendiente.html', {
+        'accion': 'eliminar', 'recurso': 'delegación',
+        'volver': 'organizacion:delegaciones_list',
+    })
 
 
 @requiere_login

@@ -9,5 +9,6 @@ urlpatterns = [
     path('delegaciones/nueva/', views.delegacion_create, name='delegacion_create'),
     path('delegaciones/<int:pk>/', views.delegacion_detail, name='delegacion_detail'),
     path('delegaciones/<int:pk>/editar/', views.delegacion_edit, name='delegacion_edit'),
+    path('delegaciones/<int:pk>/eliminar/', views.delegacion_eliminar_pendiente, name='delegacion_eliminar_pendiente'),
     path('delegaciones/<int:pk>/toggle-estado/', views.delegacion_toggle_estado, name='delegacion_toggle_estado'),
 ]

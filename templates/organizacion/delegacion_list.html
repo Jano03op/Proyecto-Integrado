@@ -65,6 +65,8 @@
                     <span class="text-muted">·</span>
                     <a class="link-sgr" href="{% url 'organizacion:delegacion_edit' d.id %}">Editar</a>
                     <span class="text-muted">·</span>
+                    <a class="link-sgr danger" href="{% url 'organizacion:delegacion_eliminar_pendiente' d.id %}">Eliminar</a>
+                    <span class="text-muted">·</span>
                     <button class="link-sgr danger border-0 bg-transparent" type="button"
                             data-bs-toggle="modal" data-bs-target="#modalDesactivar{{ d.id }}">
                         {% if d.estado == 'Activa' %}Desactivar{% else %}Activar{% endif %}

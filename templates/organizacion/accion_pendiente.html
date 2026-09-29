@@ -1,0 +1,8 @@
+{% extends 'organizacion/base_app.html' %}
+{% block title %}Acción no disponible · SGR{% endblock %}
+{% block content %}
+<div class="alert alert-info" role="status">
+    La acción de {{ accion }} {{ recurso }} aún no está disponible. No se realizaron cambios.
+</div>
+<a href="{% url volver %}" class="btn btn-outline-secondary">Volver al listado</a>
+{% endblock %}

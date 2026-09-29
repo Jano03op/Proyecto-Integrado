@@ -294,6 +294,11 @@ class IndicatorViewTests(TestCase):
         self.assertContains(response, "Dashboard general")
         self.assertContains(response, "Funcionario Juan")
         self.assertContains(response, "Atención de reclamos")
+        for action in ('agregar', 'editar', 'eliminar'):
+            pk = 0 if action == 'agregar' else self.staff.pk
+            self.assertContains(response, reverse('accion_pendiente_indicador', args=[action, pk]))
+        self.assertIn(self.staff, self.client.get(reverse('dashboard'), {'q': 'Funcionario'}).context['personas'])
+        self.assertEqual(self.client.get(reverse('dashboard'), {'q': 'Nonexistent'}).context['personas'], [])
 
     def test_dashboard_redirects_when_not_logged_in(self):
         response = self.client.get(reverse("dashboard"))
@@ -312,6 +317,14 @@ class IndicatorViewTests(TestCase):
         self.assertContains(response, "Funcionario Juan")
         self.assertContains(response, "Atención de reclamos")
         self.assertContains(response, "Actividades")
+        for action in ('agregar', 'editar', 'eliminar'):
+            pk = 0 if action == 'agregar' else self.t1.pk
+            self.assertContains(response, reverse('accion_pendiente_indicador', args=[action, pk]))
+        self.assertNotContains(self.client.get(reverse('logueo'), {'q': 'Nonexistent'}), 'Atención de reclamos')
+        url = reverse('accion_pendiente_indicador', args=['eliminar', self.t1.pk])
+        self.assertContains(self.client.get(url), 'No se realizaron cambios')
+        self.assertEqual(self.client.post(url).status_code, 405)
+        self.assertTrue(StaffTarget.objects.filter(pk=self.t1.pk).exists())
 
     def test_configurar_metas_permission_and_post_update(self):
         self.set_session(
@@ -333,6 +346,8 @@ class IndicatorViewTests(TestCase):
         self.assertTemplateUsed(response, "indicadores/configurar_metas.html")
         self.assertContains(response, "Configurar metas")
         self.assertContains(response, "Técnico de Operaciones")
+        self.assertContains(response, reverse('accion_pendiente_indicador', args=['eliminar', self.t1.pk]))
+        self.assertEqual(self.client.get(reverse('configurar_metas'), {'q': 'Nonexistent'}).context['cargos_vistos'], {})
 
         post_data = {
             "cargo": "Técnico de Operaciones",
